@@ -66,6 +66,10 @@ source .venv/Scripts/activate
 source .venv/bin/activate
 ```
 
+> **Windows note:** GNU `make` is not included with PowerShell or most Git
+> Bash installations. You can use the direct Python commands documented below
+> instead of `make`.
+
 ### Generate Data
 
 ```bash
@@ -74,6 +78,12 @@ make data
 
 # Or generate just clean data
 make data-clean
+```
+
+Windows equivalent:
+
+```powershell
+python scripts\generate_data.py --scenario all
 ```
 
 ### Run Baseline Pipeline
@@ -179,6 +189,12 @@ make metrics
 #   - ./reports/comparison_summary.md
 #   - ./reports/baseline_metrics.json
 #   - ./reports/proposed_metrics.json
+```
+
+On Windows, use:
+
+```powershell
+python scripts\export_thesis_metrics.py
 ```
 
 ### Run Full Experiment

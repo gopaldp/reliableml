@@ -11,6 +11,21 @@ Ensure that any researcher can reproduce exact results from this thesis project.
 - 8GB RAM
 - 10GB disk space
 
+On Windows, `make` is optional. Run the Python scripts directly from
+PowerShell or Git Bash:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\download_public_datasets.py
+.\.venv\Scripts\python.exe scripts\run_experiments.py
+```
+
+If the virtual environment is activated, the equivalent commands are:
+
+```powershell
+python scripts\download_public_datasets.py
+python scripts\run_experiments.py
+```
+
 ## Step-by-Step Reproduction
 
 ### 1. Environment Setup
@@ -52,7 +67,7 @@ The public transfer evaluation uses the UCI Online Retail and UCI Bike Sharing
 datasets. Download them with:
 
 ```bash
-python scripts/download_public_datasets.py
+python scripts\download_public_datasets.py
 ```
 
 This command writes adapted Parquet files and `data/public/manifest.json`.
@@ -127,7 +142,7 @@ python scripts/export_thesis_metrics.py
 ### 8. Run the Repeated Experiment Matrix
 
 ```bash
-python scripts/run_experiments.py
+python scripts\run_experiments.py
 ```
 
 The matrix runner records each configuration and outcome in
