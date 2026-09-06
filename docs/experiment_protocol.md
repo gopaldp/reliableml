@@ -53,6 +53,24 @@ Automated drift detection triggers timely retraining, maintaining model performa
 
 ## Experimental Design
 
+The evaluation combines a controlled synthetic benchmark with two public
+demand datasets. The synthetic benchmark provides known failure and drift
+ground truth; the public datasets test whether conclusions transfer beyond the
+data generator.
+
+### Dataset Tracks
+
+1. **Synthetic sales demand**: controlled clean, quality-failure, mild-drift,
+   severe-drift, and performance-degradation scenarios.
+2. **Public dataset A - UCI Online Retail**: transaction-level retail data
+   aggregated into a documented demand-prediction task.
+3. **Public dataset B - UCI Bike Sharing**: hourly demand forecasting with
+   documented temporal and weather covariates.
+
+Each public dataset must have a version or download checksum recorded in the
+experiment manifest. Dataset-specific adapters map source columns into the
+common feature/target contract without changing pipeline logic.
+
 ### Procedure
 
 1. **Setup**
@@ -68,15 +86,26 @@ Automated drift detection triggers timely retraining, maintaining model performa
    - Record metrics, MLflow runs, quality gate results
 
 4. **Drift Monitoring**
-   - Simulate production data for each scenario
-   - Run drift monitoring against reference
-   - Record decisions and drift metrics
+   - Evaluate clean, mild, and severe shifts with known labels
+   - Run drift monitoring against the training reference
+   - Record decisions, drift metrics, false alarms, missed detections, and
+     detection latency
 
-5. **Reproducibility Check**
-   - Run proposed pipeline twice on clean scenario
-   - Compare fingerprints, metrics, predictions
+5. **Ablation Runs**
+   - Baseline only
+   - Baseline plus data-quality gates
+   - Baseline plus drift monitoring
+   - Baseline plus tracking and fingerprinting
+   - Complete proposed pipeline
+   - Keep model, data split, and hyperparameters fixed within each comparison
 
-6. **Metric Export**
+6. **Reproducibility Check**
+   - Repeat the complete proposed pipeline with identical inputs
+   - Repeat selected experiments across independent random seeds and a clean
+     environment rebuild
+   - Compare fingerprints, metrics, predictions, and serialized manifests
+
+7. **Metric Export**
    - Generate comparison tables
    - Analyze results
 
@@ -85,14 +114,19 @@ Automated drift detection triggers timely retraining, maintaining model performa
 - **Random Seed**: Fixed at 42 for all data generation
 - **Model Hyperparameters**: Identical across baseline and proposed
 - **Hardware**: Same machine for all runs
-- **Software Versions**: Pinned dependencies
+- **Software Versions**: Lock-file or generated environment manifest, including
+  operating system, Python version, and library versions
 - **Dataset Size**: Same row counts across scenarios
+- **Data Splits**: Chronological train/validation/test splits for demand data;
+  no random future leakage
 
 ### Repetitions
 
-- Each scenario run once per pipeline type
-- Reproducibility check: 2 runs with identical config
-- Total runs: 5 scenarios × 2 pipelines + 2 reproducibility = 12 runs
+- Minimum 10 independent seeds for each primary synthetic comparison
+- Minimum 5 repetitions per public-dataset pipeline/ablation condition
+- At least 2 identical-input runs for deterministic reproducibility checks
+- Report every run, not only aggregate values
+- Record the final run count in the generated experiment manifest
 
 ## Expected Outcomes
 
@@ -125,13 +159,42 @@ All outputs saved to `reports/`:
 ## Statistical Analysis
 
 ### Qualitative Comparison
-- Boolean checks: gate triggered correctly?
-- Categorical: drift decision matches expected?
+- Confusion matrix for drift decisions against scenario ground truth
+- Gate decision matrix: valid release accepted, invalid release blocked,
+  invalid release accepted, and valid release blocked
+- Failure taxonomy for schema, missingness, drift, and model-quality failures
 
 ### Quantitative Comparison
-- Model performance: mean difference across scenarios
-- Overhead: percentage increase in pipeline duration
-- Reproducibility: absolute difference in metrics
+- Model performance: mean, median, standard deviation, and 95% confidence
+  interval for MAE, RMSE, R2, and MAPE
+- Operational overhead: paired proposed-vs-baseline runtime ratio and
+  bootstrap confidence interval
+- Reliability: blocked-invalid-release rate, false-block rate, and
+  release-decision accuracy
+- Drift monitoring: precision, recall, F1, false-alarm rate, missed-drift rate,
+  and detection delay
+- Reproducibility: maximum and distribution of metric/prediction differences
+
+For paired repeated measurements, use a paired permutation test or Wilcoxon
+signed-rank test when normality is not justified. Report effect sizes and
+confidence intervals, not only p-values. Correct for multiple primary
+comparisons or label secondary analyses as exploratory.
+
+### Pre-registered Acceptance Criteria
+
+The hypotheses are supported only if the results meet criteria defined before
+the final runs:
+
+- **H1**: the proposed pipeline blocks at least 95% of injected invalid
+  releases while keeping the valid-release false-block rate below 5%
+- **H2**: identical-input runs reproduce all fingerprints and remain within
+  documented metric and prediction tolerances
+- **H3**: drift detection achieves at least 90% recall on severe drift and
+  reports a measured operational false-alarm rate on clean data
+- **Overhead constraint**: median proposed pipeline overhead remains below 3x
+  the matched baseline unless a higher cost is explicitly justified
+
+These thresholds are evaluation criteria, not guaranteed outcomes.
 
 ## Threats to Validity
 
@@ -143,7 +206,19 @@ All outputs saved to `reports/`:
 - **Synthetic Data**: May not reflect real-world complexity
 - **Mitigation**: Use realistic feature relationships and scenarios
 - **Generalization**: Results specific to tabular regression
-- **Mitigation**: Document limitations clearly
+- **Mitigation**: Evaluate two public demand datasets with different feature
+  distributions and document remaining limitations clearly
+- **Dataset selection bias**: Public datasets may be unusually clean or
+  convenient
+- **Mitigation**: Publish inclusion criteria, preprocessing decisions, and
+  failed or unsupported dataset attempts
+- **Concept-drift ground truth**: Real-world drift labels are rarely known
+- **Mitigation**: Use injected shifts with known labels for controlled
+  evaluation and report real-data drift as exploratory
+- **Threshold tuning bias**: Gate and drift thresholds can be selected to fit
+  observed scenarios
+- **Mitigation**: Freeze thresholds using a calibration split before final
+  test runs
 
 ### Construct Validity
 - **Reliability Definition**: Blocking invalid models is one aspect
@@ -154,17 +229,20 @@ All outputs saved to `reports/`:
 ## Ethical Considerations
 
 - **Research only**: Not for production use
-- **No real user data**: Synthetic dataset only
-- **No proprietary data**: Public approach, open implementation
+- **No real user data**: Public datasets only; no private user data is used
+- **No proprietary data**: Public approach, open implementation, and dataset
+  licenses documented in the replication package
 
 ## Timeline
 
-1. Implementation: Complete
-2. Data generation: ~5 minutes
-3. Baseline runs: ~2 minutes (5 scenarios)
-4. Proposed runs: ~5 minutes (5 scenarios)
-5. Drift monitoring: ~3 minutes (5 scenarios)
-6. Reproducibility: ~2 minutes
-7. Analysis and reporting: Manual
+1. Implementation and unit tests: Complete
+2. Dataset adapters and checksums
+3. Calibration and pilot runs
+4. Locked repeated experiment matrix
+5. Ablation and transfer evaluation
+6. Statistical analysis and plots
+7. Thesis writing, review, and replication package
 
-**Total experiment runtime: ~20 minutes**
+The runtime is reported from the generated manifest after the experiment matrix
+is finalized; it is not assumed to be 20 minutes once repetitions and public
+datasets are included.
