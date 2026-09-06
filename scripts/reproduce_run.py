@@ -108,6 +108,7 @@ def main() -> None:
 
     if not report["reproducible"]:
         sys.exit(1)
-        
+
+
 if __name__ == "__main__":
     main()

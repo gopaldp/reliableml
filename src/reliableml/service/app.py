@@ -128,7 +128,7 @@ def predict_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Inference computation failed: {e}",
-        )
+        ) from e
 
     # Log prediction event for drift monitoring
     pred_logger.log_prediction(
@@ -178,10 +178,10 @@ def batch_predict_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Batch inference failed: {e}",
-        )
+        ) from e
 
     # Log each prediction
-    for rec, pred in zip(records, predictions):
+    for rec, pred in zip(records, predictions, strict=True):
         pred_logger.log_prediction(
             features=rec,
             prediction=pred,

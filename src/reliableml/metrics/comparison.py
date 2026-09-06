@@ -50,12 +50,6 @@ def generate_thesis_metrics_comparison(
         with open(proposed_summary_path, encoding="utf-8") as f:
             proposed_data = json.load(f)
 
-    # Load validation report
-    validation_data = {}
-    if Path(validation_report_path).exists():
-        with open(validation_report_path, encoding="utf-8") as f:
-            validation_data = json.load(f)
-
     # Load drift decision
     drift_data = {}
     if Path(drift_decision_path).exists():

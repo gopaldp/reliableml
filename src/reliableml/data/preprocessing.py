@@ -110,7 +110,7 @@ class SalesDemandPreprocessor(BaseEstimator, TransformerMixin):
         for col in self.categorical_features:
             if col in df.columns:
                 mapping = self.category_mappings.get(col, {})
-                df[col] = df[col].map(lambda x: mapping.get(x, 0))  # 0 for unknown
+                df[col] = df[col].map(lambda x, mapping=mapping: mapping.get(x, 0))  # 0 for unknown
                 df[col] = df[col].astype("category")
             else:
                 df[col] = 0
