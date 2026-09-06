@@ -294,25 +294,41 @@ python scripts/run_proposed_pipeline.py --scenario severe_drift
 - ✅ Identical metric reproduction verification
 - ✅ Prediction array comparison
 
-## 🎯 Thesis Hypothesis
+## 🎯 Thesis Evaluation Plan
 
-**Hypothesis:** Integrating automated data-quality gates and drift monitoring into ML pipelines significantly improves:
+**Research question:** How can automated data-quality gates and data-drift monitoring improve the reliability and reproducibility of continuous machine-learning deployment compared with a conventional CI/CD pipeline?
+
+The evaluation tests:
 1. **Reliability** - Invalid models are prevented from deployment
 2. **Reproducibility** - Complete lineage enables exact result recreation
 3. **Operational Safety** - Drift detection triggers timely retraining
 
-**Validation Approach:**
-- Run both baseline and proposed pipelines across all scenarios
+**Validation design:**
+- Run a controlled synthetic benchmark with known failure and drift ground truth
+- Transfer the comparison to UCI Online Retail and UCI Bike Sharing
+- Repeat primary synthetic comparisons across at least 10 seeds
+- Repeat public-dataset and ablation conditions at least 5 times
+- Compare baseline, individual safeguards, and the complete proposed pipeline
 - Compare:
   - Invalid release prevention
   - Deployment safety
   - Lineage completeness
   - Drift detection accuracy
   - Reproducibility verification success
+  - Runtime overhead and false-alarm rates
 
-## 📈 Results Summary
+Pre-registered targets and statistical procedures are documented in
+[`docs/experiment_protocol.md`](docs/experiment_protocol.md). These are
+evaluation criteria, not guaranteed results.
 
-After running `make full-experiment`, compare the outputs:
+## 📈 Current Results and Thesis Evidence
+
+The current repository contains the synthetic benchmark and implementation
+prototype. Public-dataset adapters, repeated experiment orchestration, and
+statistical aggregation are the next thesis-evaluation milestones. Do not
+interpret the current single-run synthetic reports as final thesis evidence.
+
+After running `make full-experiment`, inspect:
 
 | Metric | Baseline | Proposed MLOps |
 |--------|----------|----------------|
@@ -324,6 +340,10 @@ After running `make full-experiment`, compare the outputs:
 | Drift Monitoring | ❌ No | ✅ Evidently |
 | Invalid Release Prevented | ❌ No | ✅ Yes (Blocked) |
 | Reproducibility Verified | ❌ No | ✅ Yes |
+
+For the final thesis evaluation, replace this implementation-status table with
+the generated aggregate results, confidence intervals, effect sizes, and drift
+confusion matrices.
 
 ## 🛠️ Technology Stack
 

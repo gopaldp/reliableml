@@ -96,15 +96,18 @@ This document maps the ReliableML codebase to a typical master's thesis structur
 ## Chapter 5: Experimental Design
 
 **Relevant Files**:
-- `docs/experiment_protocol.md` - Complete protocol
-- `configs/scenarios.yaml` - Scenario definitions
+- `docs/experiment_protocol.md` - Pre-registered protocol
+- `configs/scenarios.yaml` - Synthetic scenario definitions
+- Dataset adapters and experiment manifests - Public datasets and checksums
 
-**Section 5.1: Scenarios**
+**Section 5.1: Datasets and Scenarios**
 - Clean operation
 - Data quality failure
 - Mild drift
 - Severe drift
 - Performance degradation
+- UCI Online Retail transfer task
+- UCI Bike Sharing transfer task
 
 **Section 5.2: Metrics**
 - Files: `docs/metrics_definition.md`, `src/reliableml/metrics/comparison.py`
@@ -115,10 +118,15 @@ This document maps the ReliableML codebase to a typical master's thesis structur
 **Section 5.3: Experimental Procedure**
 - Files: `scripts/*.py`, `Makefile`
 - Step-by-step execution
-- Data collection process
-- Result aggregation
+- Repeated seeded runs and ablation variants
+- Data collection process and experiment manifests
+- Result aggregation and statistical analysis
 
 ## Chapter 6: Results
+
+The current repository contains pilot synthetic results. The final thesis
+chapter must be populated only after the repeated, public-dataset, and ablation
+experiments are complete. Report per-run data before aggregate statistics.
 
 **Section 6.1: Quality Gate Effectiveness**
 - Source: `reports/data_validation_report.json`, `reports/proposed_pipeline_summary.json`
@@ -152,23 +160,28 @@ This document maps the ReliableML codebase to a typical master's thesis structur
 
 **Section 7.1: Hypothesis Validation**
 
-**H1: Reliability** ✅
-- Evidence: `data_quality_failure` scenario blocked by proposed, passed by baseline
-- Conclusion: Quality gates effectively prevent invalid deployments
+**H1: Reliability**
+- Report blocked-invalid-release rate and valid-release false-block rate with
+  confidence intervals.
+- Do not mark the hypothesis supported until the pre-registered thresholds are
+  evaluated on the locked experiment matrix.
 
-**H2: Reproducibility** ✅
-- Evidence: Reproducibility report shows identical results
-- Conclusion: Fingerprinting and tracking enable exact reproduction
+**H2: Reproducibility**
+- Report fingerprint, metric, prediction, and environment-manifest agreement
+  across repeated runs.
 
-**H3: Operational Safety** ✅
-- Evidence: Drift monitoring correctly identified severe drift and triggered RETRAIN
-- Conclusion: Automated monitoring improves operational response
+**H3: Operational Safety**
+- Report drift precision, recall, F1, false-alarm rate, missed-drift rate, and
+  detection delay against controlled ground truth.
 
 **Section 7.2: Limitations**
 
 - **Synthetic Data**: Real-world complexity not fully captured
+- **Dataset Transfer**: Public datasets may differ in schema, granularity, and
+  drift behavior
 - **Local Execution**: Scalability not tested
-- **Single Use Case**: Tabular regression only
+- **Model Scope**: Evaluation remains limited to tabular regression and
+  LightGBM unless additional models are added
 - **Offline Monitoring**: Real-time drift not implemented
 
 **Section 7.3: Trade-offs**

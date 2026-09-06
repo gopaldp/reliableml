@@ -155,6 +155,11 @@ All outputs saved to `reports/`:
 - `reproducibility_report.json`
 - `comparison_metrics.csv`
 - `comparison_summary.md`
+- `experiment_manifest.json`
+- `per_run_results.csv`
+- `aggregate_results.csv`
+- `statistical_tests.json`
+- `figures/`
 
 ## Statistical Analysis
 

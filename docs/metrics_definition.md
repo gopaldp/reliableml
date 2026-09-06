@@ -194,6 +194,46 @@ Drift Share = (Number of Drifted Features) / (Total Features)
 
 **Acceptable Range**: < 3x (less than 200% overhead).
 
+### Release-Decision Metrics
+
+For repeated quality-gate experiments, report:
+
+- **Blocked-invalid-release rate**: invalid releases correctly blocked /
+  all invalid-release attempts
+- **Valid-release false-block rate**: valid releases incorrectly blocked /
+  all valid-release attempts
+- **Release-decision accuracy**: correct release decisions / all decisions
+
+### Drift Detection Metrics
+
+Against scenario labels or documented injected-shift ground truth, report:
+
+- **Precision**: correct drift alerts / all drift alerts
+- **Recall**: detected drift cases / all drift cases
+- **F1**: harmonic mean of precision and recall
+- **False-alarm rate**: clean cases incorrectly flagged / all clean cases
+- **Missed-drift rate**: drift cases not flagged / all drift cases
+- **Detection delay**: time or observation count between shift onset and alert
+
+### Statistical Reporting
+
+For repeated runs, report mean, median, standard deviation, and 95% confidence
+intervals. For paired baseline/proposed measurements, report an effect size and
+a paired permutation or Wilcoxon signed-rank test when normality is not
+justified. P-values must not be reported without the corresponding effect size
+and uncertainty interval.
+
+### Experiment Manifest
+
+Every final result must be traceable to an `experiment_manifest.json` containing:
+
+- Git commit and configuration file hashes
+- Dataset identifier, version, license, and checksum
+- Random seed and repetition number
+- Python, operating system, hardware, and dependency versions
+- Pipeline variant and ablation condition
+- Start/end timestamps and execution status
+
 ## Thesis-Specific Metrics
 
 ### Experiment Tracking Present (boolean)
