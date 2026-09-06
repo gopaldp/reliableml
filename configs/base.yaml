@@ -1,0 +1,86 @@
+# Base Configuration for ReliableML
+# Shared settings across all pipelines
+
+project:
+  name: reliableml-sales-forecasting
+  description: Sales demand forecasting with automated quality gates
+  random_seed: 42
+
+paths:
+  data_dir: ./data
+  raw_data: ./data/raw
+  processed_data: ./data/processed
+  reference_data: ./data/reference
+  production_data: ./data/production
+  artifacts: ./artifacts
+  reports: ./reports
+  mlruns: ./mlruns
+
+data_generation:
+  num_rows: 10000
+  num_stores: 20
+  product_categories:
+    - Electronics
+    - Clothing
+    - Food
+    - Home
+    - Sports
+  date_range:
+    start: "2024-01-01"
+    end: "2025-12-31"
+
+data_splits:
+  # Chronological splits
+  train_end_date: "2025-06-30"
+  validation_end_date: "2025-09-30"
+  test_end_date: "2025-12-31"
+  # Production simulation after test period
+  production_start_date: "2026-01-01"
+  production_end_date: "2026-03-31"
+
+model:
+  target_column: sales_demand
+  feature_columns:
+    - store_id
+    - product_category
+    - promotion_flag
+    - price
+    - inventory_level
+    - competitor_price
+    - temperature
+    - day_of_week
+    - month
+    - previous_day_sales
+  categorical_features:
+    - store_id
+    - product_category
+    - day_of_week
+    - month
+
+  hyperparameters:
+    objective: regression
+    metric: rmse
+    boosting_type: gbdt
+    num_leaves: 31
+    learning_rate: 0.05
+    n_estimators: 100
+    max_depth: -1
+    min_child_samples: 20
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_alpha: 0.1
+    reg_lambda: 0.1
+    random_state: 42
+    verbose: -1
+    force_row_wise: true
+
+mlflow:
+  tracking_uri: sqlite:///mlruns.db
+  experiment_name: reliableml-sales-forecasting
+  artifact_root: ./artifacts/mlruns
+  registered_model_name: sales-demand-forecaster
+  model_alias: champion
+
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

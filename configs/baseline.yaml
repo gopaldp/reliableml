@@ -1,0 +1,35 @@
+# Baseline Pipeline Configuration
+# Simple training pipeline without quality gates or tracking
+
+pipeline:
+  type: baseline
+  name: baseline-pipeline
+  description: Traditional ML pipeline without MLOps practices
+
+# No data validation gates
+data_validation:
+  enabled: false
+
+# No model quality gates
+model_quality_gates:
+  enabled: false
+
+# No MLflow tracking required (optional logging only)
+tracking:
+  enabled: false
+  log_to_file: true
+  summary_file: ./reports/baseline_run_summary.json
+
+# Simple model persistence
+model_output:
+  save_path: ./artifacts/baseline_model.pkl
+  format: pickle
+
+# Evaluation metrics to compute
+evaluation:
+  metrics:
+    - mae
+    - rmse
+    - r2
+    - mape
+  save_predictions: false

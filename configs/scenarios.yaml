@@ -1,0 +1,107 @@
+# Scenarios Configuration for Experiments
+# Defines test scenarios for evaluating pipeline behavior under various data conditions
+
+scenarios:
+  clean:
+    description: Baseline clean data with normal distributions and no anomalies
+    data_quality:
+      missing_ratio: 0.0
+      duplicate_ratio: 0.0
+      negative_price_ratio: 0.0
+      negative_inventory_ratio: 0.0
+      invalid_category_ratio: 0.0
+      impossible_dates: false
+    drift:
+      price_shift_factor: 1.0
+      promotion_frequency_boost: 0.0
+      category_mix_shift: false
+      temperature_shift: 0.0
+      concept_drift_factor: 1.0
+
+  data_quality_failure:
+    description: Data quality issues injected to trigger data quality gates
+    data_quality:
+      missing_ratio: 0.15          # Exceeds max_missing_ratio (0.05)
+      duplicate_ratio: 0.05        # Exceeds max_duplicate_ratio (0.01)
+      negative_price_ratio: 0.08   # Violates price > 0 rule
+      negative_inventory_ratio: 0.05 # Violates inventory >= 0 rule
+      invalid_category_ratio: 0.04 # Injects unseen category values
+      impossible_dates: true       # Injects invalid dates
+    drift:
+      price_shift_factor: 1.0
+      promotion_frequency_boost: 0.0
+      category_mix_shift: false
+      temperature_shift: 0.0
+      concept_drift_factor: 1.0
+
+  mild_drift:
+    description: Minor feature distribution shifts that should trigger INVESTIGATE but not RETRAIN
+    data_quality:
+      missing_ratio: 0.0
+      duplicate_ratio: 0.0
+      negative_price_ratio: 0.0
+      negative_inventory_ratio: 0.0
+      invalid_category_ratio: 0.0
+      impossible_dates: false
+    drift:
+      price_shift_factor: 1.15     # 15% price increase
+      promotion_frequency_boost: 0.10 # 10% more promotions
+      category_mix_shift: false
+      temperature_shift: 3.0       # 3 degree seasonal shift
+      concept_drift_factor: 1.05   # 5% target relationship change
+
+  severe_drift:
+    description: Major distribution shifts that should trigger RETRAIN_REQUIRED
+    data_quality:
+      missing_ratio: 0.0
+      duplicate_ratio: 0.0
+      negative_price_ratio: 0.0
+      negative_inventory_ratio: 0.0
+      invalid_category_ratio: 0.0
+      impossible_dates: false
+    drift:
+      price_shift_factor: 1.60     # 60% price inflation
+      promotion_frequency_boost: 0.40 # 40% more promotions
+      category_mix_shift: true     # Shift category proportions heavily
+      temperature_shift: 15.0      # Major climate shift
+      concept_drift_factor: 1.50   # 50% target relationship change
+
+  performance_degradation:
+    description: Target relationship breakdown causing model performance drop
+    data_quality:
+      missing_ratio: 0.0
+      duplicate_ratio: 0.0
+      negative_price_ratio: 0.0
+      negative_inventory_ratio: 0.0
+      invalid_category_ratio: 0.0
+      impossible_dates: false
+    drift:
+      price_shift_factor: 1.20
+      promotion_frequency_boost: 0.20
+      category_mix_shift: true
+      temperature_shift: 5.0
+      concept_drift_factor: 2.20   # Strong concept drift leading to poor predictions
+
+# Drift Monitoring Decision Thresholds
+drift_monitoring:
+  # Evidently test thresholds
+  confidence_level: 0.95
+  numerical_drift_method: ks       # Kolmogorov-Smirnov test
+  categorical_drift_method: chisquare # Chi-square test
+  drift_share_threshold: 0.3       # Share of features drifting to flag dataset drift
+
+  # Decision thresholds
+  decisions:
+    continue_max_drift_share: 0.20
+    investigate_max_drift_share: 0.50
+    retrain_min_drift_share: 0.50
+    critical_features:
+      - price
+      - previous_day_sales
+      - promotion_flag
+
+  output_paths:
+    html_report: ./reports/drift_report.html
+    json_summary: ./reports/drift_summary.json
+    decision_file: ./reports/drift_decision.json
+    retraining_request: ./reports/retraining_request.json

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  mlflow:
+    image: python:3.11-slim
+    container_name: reliableml-mlflow
+    working_dir: /app
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./artifacts:/app/artifacts
+      - ./mlruns.db:/app/mlruns.db
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlruns.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/app/artifacts/mlruns
+    command: >
+      sh -c "pip install --no-cache-dir mlflow &&
+             mlflow server
+             --backend-store-uri sqlite:///mlruns.db
+             --default-artifact-root /app/artifacts/mlruns
+             --host 0.0.0.0
+             --port 5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  prediction-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reliableml-prediction-service
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data
+      - ./reports:/app/reports
+      - ./prediction_logs:/app/prediction_logs
+      - ./mlruns:/app/mlruns
+      - ./mlruns.db:/app/mlruns.db
+      - ./configs:/app/configs
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - MODEL_PATH=/app/artifacts/baseline_model.pkl
+      - USE_MLFLOW=false
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MODEL_REGISTRY_NAME=sales-demand-forecaster
+      - MODEL_STAGE_OR_ALIAS=champion
+      - PREDICTION_LOG_PATH=/app/prediction_logs/predictions.jsonl
+    depends_on:
+      - mlflow
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+networks:
+  default:
+    name: reliableml-network
