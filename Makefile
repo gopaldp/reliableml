@@ -1,4 +1,4 @@
-.PHONY: help setup data baseline mlflow proposed serve compose-up compose-down simulate-clean simulate-mild-drift simulate-severe-drift monitor reproduce metrics test lint format clean
+.PHONY: help setup data data-public baseline mlflow proposed serve compose-up compose-down simulate-clean simulate-mild-drift simulate-severe-drift monitor reproduce metrics experiments test lint format clean
 
 help: ## Show this help message
 	@echo "ReliableML - Master's Thesis MLOps Pipeline"
@@ -18,6 +18,9 @@ data: ## Generate all scenario datasets
 
 data-clean: ## Generate clean scenario dataset only
 	. .venv/Scripts/activate && python scripts/generate_data.py --scenario clean
+
+data-public: ## Download and prepare UCI public thesis datasets
+	. .venv/Scripts/activate && python scripts/download_public_datasets.py
 
 baseline: ## Run baseline pipeline on clean data
 	. .venv/Scripts/activate && python scripts/run_baseline.py --scenario clean
@@ -63,6 +66,9 @@ reproduce: ## Run reproducibility experiment
 
 metrics: ## Export thesis comparison metrics
 	. .venv/Scripts/activate && python scripts/export_thesis_metrics.py
+
+experiments: ## Run the repeated thesis experiment matrix
+	. .venv/Scripts/activate && python scripts/run_experiments.py
 
 test: ## Run pytest test suite
 	. .venv/Scripts/activate && pytest tests/ -v --tb=short

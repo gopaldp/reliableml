@@ -1,0 +1,32 @@
+# Reproducible thesis experiment matrix. Public dataset downloads are intentionally out of scope.
+experiment:
+  scenario: clean
+  seeds: [13, 42, 101, 202, 303, 401, 503, 607, 701, 809]
+  output_dir: ./reports/experiments
+  variants:
+    - name: baseline
+      pipeline: baseline
+      pipeline_config: configs/baseline.yaml
+    - name: proposed
+      pipeline: proposed
+      pipeline_config: configs/proposed.yaml
+    - name: proposed_without_data_validation
+      pipeline: proposed
+      pipeline_config: configs/proposed.yaml
+      overrides:
+        data_validation:
+          enabled: false
+        data_quality_gates:
+          enabled: false
+    - name: proposed_without_model_gate
+      pipeline: proposed
+      pipeline_config: configs/proposed.yaml
+      overrides:
+        model_quality_gates:
+          enabled: false
+    - name: proposed_without_registry
+      pipeline: proposed
+      pipeline_config: configs/proposed.yaml
+      overrides:
+        registry:
+          enabled: false

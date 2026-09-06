@@ -24,6 +24,7 @@ python-multipart>=0.0.9
 # Configuration and Data Formats
 pyyaml>=6.0
 pyarrow>=15.0.0
+openpyxl>=3.1.0
 
 # HTTP Client
 requests>=2.31.0

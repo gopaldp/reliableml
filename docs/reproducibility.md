@@ -46,6 +46,19 @@ ls data/processed/
 - `clean_test.parquet`: ~1500 rows
 - Similar splits for other scenarios
 
+### 2a. Prepare Public Evaluation Datasets
+
+The public transfer evaluation uses the UCI Online Retail and UCI Bike Sharing
+datasets. Download them with:
+
+```bash
+python scripts/download_public_datasets.py
+```
+
+This command writes adapted Parquet files and `data/public/manifest.json`.
+The manifest records the source URL, archive SHA-256 checksum, adapted row
+count, and output path. Review the source licenses before redistribution.
+
 ### 3. Run Baseline Pipeline
 
 ```bash
@@ -110,6 +123,17 @@ python scripts/export_thesis_metrics.py
 **Expected Output**:
 - `reports/comparison_metrics.csv`
 - `reports/comparison_summary.md`
+
+### 8. Run the Repeated Experiment Matrix
+
+```bash
+python scripts/run_experiments.py
+```
+
+The matrix runner records each configuration and outcome in
+`reports/experiment_manifest.json`, writes raw rows to
+`reports/per_run_results.csv`, and produces aggregate statistics in
+`reports/aggregate_results.csv`.
 
 ## Thesis-Grade Evaluation (Planned/Required)
 

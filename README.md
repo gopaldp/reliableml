@@ -201,6 +201,7 @@ reliableml/
 │   ├── processed/             # Train/val/test splits
 │   ├── reference/             # Baseline reference data
 │   └── production/            # Simulated production data
+│   └── public/                # Downloaded public datasets and checksums
 ├── src/reliableml/            # Core library modules
 │   ├── data/                  # Data generation, validation, preprocessing
 │   ├── models/                # Training, evaluation, registry
@@ -215,7 +216,9 @@ reliableml/
 │   ├── simulate_production.py    # Production simulation
 │   ├── run_drift_monitoring.py   # Drift monitoring
 │   ├── reproduce_run.py          # Reproducibility check
-│   └── export_thesis_metrics.py  # Export comparison
+│   ├── export_thesis_metrics.py  # Export comparison
+│   ├── download_public_datasets.py # Prepare UCI transfer datasets
+│   └── run_experiments.py       # Repeated seeds and ablations
 ├── tests/                     # Pytest test suite
 ├── docs/                      # Documentation
 ├── .github/workflows/         # CI configuration
