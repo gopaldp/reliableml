@@ -54,7 +54,14 @@ safe-outputs:
   threat-detection:
     engine: false
 
-timeout-minutes: 20
+# Hard limits, enforced by the gh-aw proxy. Without them a run used 104 AI
+# credits (half the Student plan's monthly 200) when the agent retried a
+# failing edit 326 times. A normal run uses ~2.5 credits and well under 40
+# requests, so these caps only stop runaway loops.
+max-ai-credits: 10
+max-turns: 60
+
+timeout-minutes: 15
 ---
 
 # Generate or Update Docs
@@ -93,6 +100,11 @@ Apply this rule to every documentation file:
   file already covers that topic (for example "Usage", "Running",
   "Troubleshooting"). If it does, edit that section in place instead of
   adding a second one.
+- **If an edit fails, do not repeat it.** "No match found" means the text you
+  are replacing is not in the file exactly as you wrote it (whitespace, line
+  endings). Re-read the file and copy the text exactly, or write the whole file
+  again. If the same file fails twice, leave it unchanged and mention it in
+  the pull request.
 - **The file does not exist:** create it.
 - **Never delete** an existing documentation file. If one is obsolete, say so in
   the pull request instead.
