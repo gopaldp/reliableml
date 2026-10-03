@@ -1,13 +1,9 @@
 ---
 description: |
-  Generates documentation that is missing and updates documentation that is
-  out of date, so README.md and docs/ match what the code actually does.
-  Opens one draft PR. Manual trigger only (also triggered by the
-  docs-automation hub). Repo-specific context comes from
-  .github/copilot-instructions.md.
-  Copilot engine, authenticated with the COPILOT_GITHUB_TOKEN repo secret.
-  On the Copilot Student plan, automatic model choice picks a small model
-  (observed: gpt-4o-mini), so review its PRs carefully.
+  Gemini-engine twin of update-docs.md (identical prompt). Use it when
+  Copilot is unavailable or rate-limited: run it directly, or from the
+  docs-automation hub with workflow=update-docs-gemini.lock.yml.
+  Authenticated with the GEMINI_API_KEY repo secret (Gemini API free tier).
 
 on:
   workflow_dispatch:
@@ -17,29 +13,28 @@ permissions:
   issues: read
   pull-requests: read
 
-# The Copilot Student token only accepts automatic model choice: every
-# explicit model is rejected. "copilot/auto" skips gh-aw's alias rewrite
-# and reaches Copilot CLI as "auto". AWF v0.28.23 then forwarded the literal
-# "auto" to /chat/completions (400 model_not_supported). AWF v0.28.28+
-# omits the "auto" sentinel so Copilot picks the model
-# (github/gh-aw-firewall#9195), so pin the firewall to a fixed release.
+# Gemini CLI is pinned to 0.43.0: newer versions exit with
+# "Invalid auth method selected" (code 41) behind the gh-aw API proxy.
+# See https://github.com/github/gh-aw/issues/58445. Unpin once fixed.
+#
+# gemini-3.5-flash-lite is the only model whose free tier can complete a
+# run: "auto" picks gemini-3.1-pro (free-tier limit 0) and gemini-3.5-flash
+# allows only ~20 requests per quota window. With a paid key, use
+# gemini-3.5-flash.
 engine:
-  id: copilot
-  model: copilot/auto
-
-sandbox:
-  agent:
-    version: v0.28.31
-    model-fallback: false
+  id: gemini
+  version: "0.43.0"
+  model: gemini-3.5-flash-lite
 
 network: defaults
 
 tools:
-  # No GitHub API tools: the agent reads the repository from its local
-  # checkout. Dropping them removes 27 tool definitions from every model
-  # request, which cuts the cost of each turn.
+  # No GitHub API tools: the agent reads the local checkout. This also keeps
+  # each request smaller under the free tier's tokens-per-minute limit.
   github: false
   edit:
+  # gh-aw writes allowlist entries as "git checkout:*" etc., which Gemini
+  # CLI 0.43 does not match, so list the plain prefixes needed.
   bash: ["ls", "cat", "find", "grep", "head", "tail", "wc", "jq", "mkdir",
          "git ls-files", "git log", "git diff", "git status",
          "git branch", "git checkout", "git add", "git commit", "git config",
@@ -50,24 +45,20 @@ safe-outputs:
     title-prefix: "[docs] "
     labels: [documentation]
     draft: true
-  # AI threat detection is off: it has not been tested with copilot/auto on
-  # the Student plan. Output is a docs-only draft PR reviewed before merge.
-  # To try it, set engine: copilot and run once.
+  # AI threat detection only runs on copilot, claude or codex engines, so it
+  # is off here. Output is a docs-only draft PR reviewed before merge.
   threat-detection:
     engine: false
 
-# Hard limits, enforced by the gh-aw proxy (gh-aw's own AI-credit estimate,
-# which can be far above actual Copilot billing). Without them a run looped
-# for 9 minutes (gh-aw estimated 104 credits) when the agent retried a
-# failing edit 326 times. A small update needs ~10 requests (~2.5 credits);
-# writing a full docs set from scratch needs more, so the cap is 20.
+# Same safety caps as the Copilot workflow. Gemini's free tier pauses on its
+# tokens-per-minute limit, so runs take longer: allow more time.
 max-ai-credits: 20
 max-turns: 60
 
-timeout-minutes: 15
+timeout-minutes: 30
 ---
 
-# Generate or Update Docs
+# Generate or Update Docs (Gemini)
 
 You are the documentation maintainer for `${{ github.repository }}`. Your job is
 to make the repository's documentation complete and accurate: create what is
