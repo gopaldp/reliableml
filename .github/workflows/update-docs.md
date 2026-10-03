@@ -38,7 +38,7 @@ tools:
   github:
     toolsets: [default]
   edit:
-  bash: ["ls", "cat", "find", "grep", "head", "tail", "wc", "jq",
+  bash: ["ls", "cat", "find", "grep", "head", "tail", "wc", "jq", "mkdir",
          "git ls-files", "git log", "git diff", "git status",
          "git branch", "git checkout", "git add", "git commit", "git config",
          "safeoutputs"]
@@ -127,6 +127,10 @@ Create it if missing, otherwise update it. It must contain:
 11. Links to the files in `docs/`
 
 ### docs/ (create or update as needed)
+
+If the `docs/` folder does not exist, run `mkdir -p docs` **before** creating
+any file in it. The file-creation tool cannot create folders and fails with
+"Parent directory does not exist".
 
 - `docs/architecture.md`: components and modules, how data and control flow
   between them, and what each main module is responsible for.
