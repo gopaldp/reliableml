@@ -50,9 +50,12 @@ safe-outputs:
   threat-detection:
     engine: false
 
-# Same safety caps as the Copilot workflow. Gemini's free tier pauses on its
-# tokens-per-minute limit, so runs take longer: allow more time.
-max-ai-credits: 20
+# gh-aw prices Gemini tokens with its own table even on the free tier, where
+# they cost nothing: a clean full-docs run (266k tokens, 15 tool calls) was
+# estimated at 20.7 credits and cut off just before committing. The credit
+# cap is therefore loose here; max-turns is what stops a runaway loop.
+# The free tier pauses on its tokens-per-minute limit, so allow more time.
+max-ai-credits: 60
 max-turns: 60
 
 timeout-minutes: 30
