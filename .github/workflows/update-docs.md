@@ -35,8 +35,10 @@ sandbox:
 network: defaults
 
 tools:
-  github:
-    toolsets: [default]
+  # No GitHub API tools: the agent reads the repository from its local
+  # checkout. Dropping them removes 27 tool definitions from every model
+  # request, which cuts the cost of each turn.
+  github: false
   edit:
   bash: ["ls", "cat", "find", "grep", "head", "tail", "wc", "jq", "mkdir",
          "git ls-files", "git log", "git diff", "git status",
@@ -54,11 +56,12 @@ safe-outputs:
   threat-detection:
     engine: false
 
-# Hard limits, enforced by the gh-aw proxy. Without them a run used 104 AI
-# credits (half the Student plan's monthly 200) when the agent retried a
-# failing edit 326 times. A normal run uses ~2.5 credits and well under 40
-# requests, so these caps only stop runaway loops.
-max-ai-credits: 10
+# Hard limits, enforced by the gh-aw proxy (gh-aw's own AI-credit estimate,
+# which can be far above actual Copilot billing). Without them a run looped
+# for 9 minutes (gh-aw estimated 104 credits) when the agent retried a
+# failing edit 326 times. A small update needs ~10 requests (~2.5 credits);
+# writing a full docs set from scratch needs more, so the cap is 20.
+max-ai-credits: 20
 max-turns: 60
 
 timeout-minutes: 15
@@ -69,6 +72,22 @@ timeout-minutes: 15
 You are the documentation maintainer for `${{ github.repository }}`. Your job is
 to make the repository's documentation complete and accurate: create what is
 missing, update what is outdated, and keep what is already correct.
+
+## Work efficiently
+
+This run has a small, fixed budget of model requests. When it runs out,
+the run stops and nothing is published. So:
+
+- **Do not use a todo or task-list tool.** Keep your plan in your head and
+  start working.
+- **Read only what you need:** the instructions file, the existing docs,
+  dependency files and the main entry points. Do not open every file.
+- **Write each file in one step.** For a new file or a large rewrite, create
+  the whole file with a single call. Use small edits only for small changes.
+- **Limit the scope of one run:** `README.md` plus at most two files in
+  `docs/`. If more is needed, list it in the pull request for a later run.
+- **Never repeat a call that just failed.** Change your approach or skip
+  that file.
 
 ## 1. Understand the repository
 
